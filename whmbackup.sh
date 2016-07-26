@@ -1,6 +1,6 @@
 #!/bin/sh
 ##############################################
-### whmbackup.sh v0.2
+### whmbackup.sh v0.21
 # Script to automatically send off nightly WHM
 # backups to TransIP Stack.
 # --------------------------------------------
@@ -11,6 +11,9 @@
 # Set these variables to match your preferences
 # and environment
 ###
+
+# DO NOT EDIT THIS LINE
+NOW="$(date +'%Y-%m-%d')"
 
 # GPG
 GPGKEY=0 # 0 = use passphrase, 1 = use keyfile
@@ -36,28 +39,37 @@ PATH_CAD="/usr/bin/cadaver"
 ###
 # Stop editing here, script start
 ###
+APP_VER="0.21-GIT"
 
+printf "%s" "
+################################
+###    whmbackup $APP_VER    ###
+################################
+#        SANITY CHECKS         #
+"
 # Check whether tar is set
 if [ ! -f $PATH_TAR ]; then
 	echo "Could not find tar, which is a required dependency"
     exit 1
 else
-    echo "We found tar, yay!"
+    echo "# TAR: Found!                   #"
 fi
 # Check whether GPG is set
 if [ ! -f $PATH_GPG ]; then
 	echo "Could not find gpg, which is a required dependency"
     exit 1
 else
-    echo "We found gpg, yay!"
+    echo "# GPG: Found!                   #"
 fi
 # Check whether cadaver is set
 if [ ! -f $PATH_CAD ]; then
 	echo "Could not find cadaver, which is a required dependency"
     exit 1
 else
-    echo "We found cadaver, yay!"
+    echo "# Cadaver: Found!               #"
 fi
+
+echo "################################"
 
 # Set PID file location
 HOMEDIR=`echo ~ 2> /dev/null`
@@ -72,8 +84,6 @@ fi
 
 echo "NOTICE: whmbackup commences" 
 
-NOW="$(date +'%Y-%m-%d')"
-
 # Make a small and neat package
 $PATH_TAR -zcvf $UNSEC_FILE $WHM_FOLDER
 
@@ -81,9 +91,9 @@ $PATH_TAR -zcvf $UNSEC_FILE $WHM_FOLDER
 $PATH_GPG --yes --batch --passphrase=$GPGPASS -c $BACK_DIR/backup_$NOW.tar.gz
 
 # Transfer the GPG encrypted file to TransIP Stack
-/usr/bin/cadaver -t <<EOF
+$PATH_CAD -t <<EOF
 open https://$STACK_USER.stackstorage.com/remote.php/webdav
-cd backups/server
+cd $STACK_DIR
 put $BACK_DIR/backup_$NOW.tar.gz.gpg ./backup_$NOW.tar.gz.gpg
 quit
 EOF
