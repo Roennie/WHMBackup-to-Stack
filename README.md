@@ -19,6 +19,6 @@ A: First of all, check the log file, which is set in the variables. Please make 
 
 **Q: Anything else I should know?**
 
-A: This script solely focusses on WHM, not on cPanel. You'll need root access to the server in question (you'll need to be able to access `/backup`. A per-user script for cPanel is in the making - for which you won't need root or shell access for that matter. There already is a (https://github.com/babarnazmi/cpanel-Fullbackup)[PHP script] that can accomplish this, but it doesn't use encryption, just plain-text FTP, so I'd recommend against using it.
+A: This script solely focusses on WHM, not on cPanel. You'll need root access to the server in question (you'll need to be able to access `/backup`. A per-user script for cPanel is in the making - for which you won't need root or shell access for that matter. There already is a [PHP script](https://github.com/babarnazmi/cpanel-Fullbackup) that can accomplish this, but it doesn't use encryption, just plain-text FTP, so I'd recommend against using it.
 
 If you run into trouble, have some questions/remarks, please, do not hestitate to open an issue. Thank you.
