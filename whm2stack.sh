@@ -87,11 +87,11 @@ echo "################################"
 
 # Set PID file location
 HOMEDIR=`echo ~ 2> /dev/null`
-if [ "${HOMEDIR}" = "" ]; then HOMEDIR="/tmp"; PIDFILE="$HOMEDIR/whmbackup.pid"; fi
-# Check whether whmbackup.sh is already running
-if [ -f "${HOMEDIR}/whmbackup.pid" ]; then
-	echo "ERROR: whmbackup seems to be running already, exiting"
-	echo "ERROR: whmbackup exited prematurely, PID file already existed" >> "$LOGFILE"
+if [ "${HOMEDIR}" = "" ]; then HOMEDIR="/tmp"; PIDFILE="$HOMEDIR/whm2stack.pid"; fi
+# Check whether WHMBackup-to-Stack is already running
+if [ -f "${HOMEDIR}/whm2stack.pid" ]; then
+	echo "ERROR: WHMBackup-to-Stack seems to be running already, exiting"
+	echo "ERROR: WHMBackup-to-Stack exited prematurely, PID file already existed" >> "$LOGFILE"
 	exit 1
 
 fi
