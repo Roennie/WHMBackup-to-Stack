@@ -4,8 +4,8 @@ A shell script to encrypt WHM backups using GPG and send them off to TransIP Sta
 ### Usage
 1. Clone the repository to the WHM server.
 2. Set the variables in the shell script
-3. Set the script executable (`chmod +x whmbackup.sh`)
-4. Run it: `./whmbackup.sh` or _set a daily cronjob for it_
+3. Set the script executable (`chmod +x whm2stack.sh`)
+4. Run it: `./whm2stack.sh` or _set a daily cronjob for it_
 
 ### Troubleshooting
 
