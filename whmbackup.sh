@@ -1,6 +1,6 @@
 #!/bin/sh
 ##############################################
-### whmbackup.sh v0.21
+### WHMBackup-to-Stack v0.22-GIT
 # Script to automatically send off nightly WHM
 # backups to TransIP Stack.
 # --------------------------------------------
@@ -15,8 +15,14 @@
 # DO NOT EDIT THIS LINE
 NOW="$(date +'%Y-%m-%d')"
 
+# APPLICATION
+APP_NAME="WHMBackup-to-Stack"
+APP_VER="0.22-GIT"
+UPL_APP=0 # 0 = Use cadaver for transferring, 1 = use curl
+
 # GPG
 GPGKEY=0 # 0 = use passphrase, 1 = use keyfile
+GPGFILE="/path/to/gpgkeyfile"
 GPGPASS="your-ultra-secure-GPG-passphrase"
 
 # FILES & FOLDERS
@@ -35,15 +41,15 @@ STACK_DIR="backups/server"
 PATH_TAR="/usr/bin/tar"
 PATH_GPG="/usr/bin/gpg"
 PATH_CAD="/usr/bin/cadaver"
+PATH_CURL="/usr/bin/curl"
 
 ###
 # Stop editing here, script start
 ###
-APP_VER="0.21-GIT"
 
 printf "%s" "
 ################################
-###    whmbackup $APP_VER    ###
+## $APP_NAME $APP_VER         ##
 ################################
 #        SANITY CHECKS         #
 "
@@ -68,6 +74,14 @@ if [ ! -f $PATH_CAD ]; then
 else
     echo "# Cadaver: Found!               #"
 fi
+# Check whether cadaver is set
+if [ ! -f /var/cpanel/backuprunning ]; then
+	echo "ERROR: WHM is still busy with the backup"
+    exit 1
+else
+    echo "# WHM Backup: Not running       #"
+fi
+
 
 echo "################################"
 
@@ -82,10 +96,10 @@ if [ -f "${HOMEDIR}/whmbackup.pid" ]; then
 
 fi
 
-echo "NOTICE: whmbackup commences" 
+echo "NOTICE: WHMBackup-to-Stack commences!" 
 
 # Make a small and neat package
-$PATH_TAR -zcvf $UNSEC_FILE $WHM_FOLDER
+$PATH_TAR -zcvf $UNSEC_FILE $WHM_FOLDER >> "$LOGFILE"
 
 # I can haz GPG encryptz?
 $PATH_GPG --yes --batch --passphrase=$GPGPASS -c $BACK_DIR/backup_$NOW.tar.gz
@@ -98,9 +112,14 @@ put $BACK_DIR/backup_$NOW.tar.gz.gpg ./backup_$NOW.tar.gz.gpg
 quit
 EOF
 
-echo "Delete old backups" >> "$logfile"
+echo "Delete old backups" 
 
-find $BACK_DIR -name "*.tar.gz.gpg" -exec rm {} \; > /dev/null 2>&1
-find $BACK_DIR -mtime +1 -name "*.tar.gz" -exec rm {} \; > /dev/null 2>&1
-
+if [ "${CLEANUP}" = "1" ] then
+	echo "Deleting obsolete backup files" >> "$LOGFILE"
+	find $BACK_DIR -name "*.tar.gz.gpg" -exec rm {} \; > /dev/null 2>&1
+	find $BACK_DIR -mtime +1 -name "*.tar.gz" -exec rm {} \; > /dev/null 2>&1
+	echo "Done, the backup is succesfully encrypted and transferred to Stack"
+else
+	echo "Done, the backup is succesfully encrypted and transferred to Stack"
+fi
 exit 0;
