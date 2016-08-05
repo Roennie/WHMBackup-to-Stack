@@ -1,41 +1,37 @@
 #!/bin/sh
-##############################################
-### WHMBackup-to-Stack v0.22-GIT
-# Script to automatically send off nightly WHM
-# backups to TransIP Stack.
-# --------------------------------------------
-# More details coming soon
-##############################################
+##################################################
+### WHMBackup-to-Stack v0.23-GIT				 #
+# Script to automatically send off nightly WHM   #
+# backups to TransIP Stack.						 #
+# -----------------------------------------------#
+# USAGE:										 #
+# 1. Edit the variables below					 #
+# 2. Make sure the script is executable			 #
+# 3. ./whm2stack.sh 							 #
+# 4. ???										 #
+# 5. PROFIT!									 #
+#												 #
+# If you experience problems, or have some ideas #
+# to enhance this script, please file an issue:	 #
+# https://github.com/Roennie/WHMBackup-to-Stack	 #
+##################################################
 
 ###
 # Set these variables to match your preferences
 # and environment
 ###
 
-# DO NOT EDIT THIS LINE
-NOW="$(date +'%Y-%m-%d')"
-
-# APPLICATION
-APP_NAME="WHMBackup-to-Stack"
-APP_VER="0.22-GIT"
-UPL_APP=0 # 0 = Use cadaver for transferring, 1 = use curl
+# FILES & FOLDERS
+WORK_DIR=`pwd`
+BACK_DIR="$WORK_DIR/backups"
+UNSEC_FILE="$BACK_DIR/unsec_backup_$(date +'%Y-%m-%d').gz"
+WHM_FOLDER="/backup/$now"
+LOGFILE="$WORK_DIR/"backup_log_"$(date +'%Y_%m-%d')".txt
 
 # GPG
 GPGKEY=0 # 0 = use passphrase, 1 = use keyfile
 GPGFILE="/path/to/gpgkeyfile"
 GPGPASS="your-ultra-secure-GPG-passphrase"
-
-# FILES & FOLDERS
-WORK_DIR=`pwd`
-BACK_DIR="$WORK_DIR/backups"
-UNSEC_FILE="$BACK_DIR/unsec_backup_$NOW.gz"
-WHM_FOLDER="/backup/$now"
-LOGFILE="$WORK_DIR/"backup_log_"$(date +'%Y_%m')".txt
-
-# REMOTE
-STACK_USER="your-TransIP-Stack-username"
-STACK_PASS="your-TransIP-Stack-password"
-STACK_DIR="backups/server"
 
 # DEPENDENCIES
 PATH_TAR="/usr/bin/tar"
@@ -43,9 +39,34 @@ PATH_GPG="/usr/bin/gpg"
 PATH_CAD="/usr/bin/cadaver"
 PATH_CURL="/usr/bin/curl"
 
+# REMOTE
+STACK_USER="your-TransIP-Stack-username"
+STACK_PASS="your-TransIP-Stack-password"
+STACK_DIR="backups/server"
+
+# NOTIFY
+NOTIF_RECEIP="Username that gets the report, eg: root"
+
+#TODO: SMTP support
+##NOTIF_SENDER="The sender emailaddress"
+##NOTIF_SERVER="The SMTP server hostname"
+##NOTIF_SRVUSR="The SMTP server login"
+##NOTIF_SRVPWD="The SMTP server password"
+##NOTIF_USEAUT=1 # 1 = Authenticate, 2 = don't authenticate SMTP
+##NOTIF_USETLS=1 # 1 = Use SSL/TLS, 2 = use plaintext
+
 ###
 # Stop editing here, script start
 ###
+
+# APPLICATION
+APP_NAME="WHMBackup-to-Stack"
+APP_VER="0.23-GIT"
+UPL_APP=0 # 0 = Use cadaver for transferring, 1 = use curl
+
+NOW="$(date +'%Y-%m-%d')"
+
+ROOT_UID=0
 
 printf "%s" "
 ################################
@@ -81,7 +102,13 @@ if [ ! -f /var/cpanel/backuprunning ]; then
 else
     echo "# WHM Backup: Not running       #"
 fi
-
+# Check whether the running user is root
+if [ ! "$UID" -eq "$ROOT_UID" ]; then
+    echo "ERROR: whm2stack should run as root!"
+    exit 1
+else
+	echo "# We are running as root, yay!  #"
+fi
 
 echo "################################"
 
@@ -93,7 +120,6 @@ if [ -f "${HOMEDIR}/whm2stack.pid" ]; then
 	echo "ERROR: WHMBackup-to-Stack seems to be running already, exiting"
 	echo "ERROR: WHMBackup-to-Stack exited prematurely, PID file already existed" >> "$LOGFILE"
 	exit 1
-
 fi
 
 echo "NOTICE: WHMBackup-to-Stack commences!" 
@@ -114,7 +140,7 @@ EOF
 
 echo "Delete old backups" 
 
-if [ "${CLEANUP}" = "1" ] then
+if [ "${CLEANUP}" -eq 1 ]; then
 	echo "Deleting obsolete backup files" >> "$LOGFILE"
 	find $BACK_DIR -name "*.tar.gz.gpg" -exec rm {} \; > /dev/null 2>&1
 	find $BACK_DIR -mtime +1 -name "*.tar.gz" -exec rm {} \; > /dev/null 2>&1
@@ -122,4 +148,10 @@ if [ "${CLEANUP}" = "1" ] then
 else
 	echo "Done, the backup is succesfully encrypted and transferred to Stack"
 fi
+
+if [ "${NOTIFY}" = "1" ]; then
+	echo "Notifying the server administrator" >> "$LOGFILE"
+	echo $REPORT | mail -s "[whm2stack] Backup report for $NOW" $NOTIF_RECEIP
+fi
+
 exit 0;
