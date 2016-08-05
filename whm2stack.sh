@@ -1,19 +1,19 @@
 #!/bin/sh
 ##################################################
-### WHMBackup-to-Stack v0.23-GIT				 #
+### WHMBackup-to-Stack v0.23-GIT                 #
 # Script to automatically send off nightly WHM   #
-# backups to TransIP Stack.						 #
+# backups to TransIP Stack.                      #
 # -----------------------------------------------#
-# USAGE:										 #
-# 1. Edit the variables below					 #
-# 2. Make sure the script is executable			 #
-# 3. ./whm2stack.sh 							 #
-# 4. ???										 #
-# 5. PROFIT!									 #
-#												 #
+# USAGE:                                         #
+# 1. Edit the variables below                    #
+# 2. Make sure the script is executable          #
+# 3. ./whm2stack.sh                              #
+# 4. ???                                         #
+# 5. PROFIT!                                     #
+#                                                #
 # If you experience problems, or have some ideas #
-# to enhance this script, please file an issue:	 #
-# https://github.com/Roennie/WHMBackup-to-Stack	 #
+# to enhance this script, please file an issue:  #
+# https://github.com/Roennie/WHMBackup-to-Stack  #
 ##################################################
 
 ###
@@ -76,28 +76,28 @@ printf "%s" "
 "
 # Check whether tar is set
 if [ ! -f $PATH_TAR ]; then
-	echo "Could not find tar, which is a required dependency"
+    echo "Could not find tar, which is a required dependency"
     exit 1
 else
     echo "# TAR: Found!                   #"
 fi
 # Check whether GPG is set
 if [ ! -f $PATH_GPG ]; then
-	echo "Could not find gpg, which is a required dependency"
+    echo "Could not find gpg, which is a required dependency"
     exit 1
 else
     echo "# GPG: Found!                   #"
 fi
 # Check whether cadaver is set
 if [ ! -f $PATH_CAD ]; then
-	echo "Could not find cadaver, which is a required dependency"
+    echo "Could not find cadaver, which is a required dependency"
     exit 1
 else
     echo "# Cadaver: Found!               #"
 fi
 # Check whether cadaver is set
 if [ ! -f /var/cpanel/backuprunning ]; then
-	echo "ERROR: WHM is still busy with the backup"
+    echo "ERROR: WHM is still busy with the backup"
     exit 1
 else
     echo "# WHM Backup: Not running       #"
@@ -107,7 +107,7 @@ if [ ! "$UID" -eq "$ROOT_UID" ]; then
     echo "ERROR: whm2stack should run as root!"
     exit 1
 else
-	echo "# We are running as root, yay!  #"
+    echo "# We are running as root, yay!  #"
 fi
 
 echo "################################"
@@ -117,9 +117,9 @@ HOMEDIR=`echo ~ 2> /dev/null`
 if [ "${HOMEDIR}" = "" ]; then HOMEDIR="/tmp"; PIDFILE="$HOMEDIR/whm2stack.pid"; fi
 # Check whether WHMBackup-to-Stack is already running
 if [ -f "${HOMEDIR}/whm2stack.pid" ]; then
-	echo "ERROR: WHMBackup-to-Stack seems to be running already, exiting"
-	echo "ERROR: WHMBackup-to-Stack exited prematurely, PID file already existed" >> "$LOGFILE"
-	exit 1
+    echo "ERROR: WHMBackup-to-Stack seems to be running already, exiting"
+    echo "ERROR: WHMBackup-to-Stack exited prematurely, PID file already existed" >> "$LOGFILE"
+    exit 1
 fi
 
 echo "NOTICE: WHMBackup-to-Stack commences!" 
@@ -141,17 +141,17 @@ EOF
 echo "Delete old backups" 
 
 if [ "${CLEANUP}" -eq 1 ]; then
-	echo "Deleting obsolete backup files" >> "$LOGFILE"
-	find $BACK_DIR -name "*.tar.gz.gpg" -exec rm {} \; > /dev/null 2>&1
-	find $BACK_DIR -mtime +1 -name "*.tar.gz" -exec rm {} \; > /dev/null 2>&1
-	echo "Done, the backup is succesfully encrypted and transferred to Stack"
+    echo "Deleting obsolete backup files" >> "$LOGFILE"
+    find $BACK_DIR -name "*.tar.gz.gpg" -exec rm {} \; > /dev/null 2>&1
+    find $BACK_DIR -mtime +1 -name "*.tar.gz" -exec rm {} \; > /dev/null 2>&1
+    echo "Done, the backup is succesfully encrypted and transferred to Stack"
 else
-	echo "Done, the backup is succesfully encrypted and transferred to Stack"
+    echo "Done, the backup is succesfully encrypted and transferred to Stack"
 fi
 
 if [ "${NOTIFY}" = "1" ]; then
-	echo "Notifying the server administrator" >> "$LOGFILE"
-	echo $REPORT | mail -s "[whm2stack] Backup report for $NOW" $NOTIF_RECEIP
+    echo "Notifying the server administrator" >> "$LOGFILE"
+    echo $REPORT | mail -s "[whm2stack] Backup report for $NOW" $NOTIF_RECEIP
 fi
 
 exit 0;
